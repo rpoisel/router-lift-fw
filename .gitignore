@@ -1,3 +1,7 @@
+# PlatformIO ignores
+.pioenvs/
+.piolibdeps/
+
 # Prerequisites
 *.d
 
