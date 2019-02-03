@@ -2,6 +2,8 @@
 .pioenvs/
 .piolibdeps/
 
+.vscode/
+
 # Prerequisites
 *.d
 
