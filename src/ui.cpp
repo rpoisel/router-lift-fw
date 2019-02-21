@@ -3,6 +3,10 @@
 MyDisplay::MyDisplay(uint8_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows)
     : lcd(lcd_Addr, lcd_cols, lcd_rows)
 {
+}
+
+void MyDisplay::begin()
+{
   lcd.init();
   lcd.backlight();
   drawTitle();

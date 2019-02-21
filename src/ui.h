@@ -8,6 +8,7 @@ class MyDisplay
 {
   public:
   MyDisplay(uint8_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows);
+  void begin();
   void drawTitle();
   inline LiquidCrystal_I2C& getRaw()
   {

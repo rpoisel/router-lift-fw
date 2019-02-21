@@ -6,7 +6,7 @@
 #include <Encoder.h>
 
 static Encoder myEnc(5, 6);
-static Stepper stepper(1, 2, 3);
+static Stepper stepper(200, 2, 3);
 
 static MyDisplay display(0x27, 20, 4);
 static MyRenderer my_renderer(display);
@@ -25,6 +25,7 @@ MenuItem menuSubItem1("Speed", [](MenuComponent* p_menu_component) { stepper.set
 void setup()
 {
   Serial.begin(115200);
+  display.begin();
   oldPos = myEnc.read();
 
   ms.get_root_menu().add_item(&menuMainItem1);
@@ -51,12 +52,15 @@ void loop()
     {
     case 'w':
       ms.prev();
+      ms.display();
       break;
     case 's':
       ms.next();
+      ms.display();
       break;
     case 'a':
       ms.back();
+      ms.display();
       break;
     case 'd':
       ms.select();
@@ -64,7 +68,6 @@ void loop()
     default:
       break;
     }
-    ms.display();
   }
   stepper.update();
 }
