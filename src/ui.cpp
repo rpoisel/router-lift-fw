@@ -14,14 +14,14 @@ void MyDisplay::begin()
 
 void MyDisplay::drawTitle()
 {
-  lcd.setCursor(3, 0);
-  lcd.print("Hello, world!");
-  lcd.setCursor(2, 1);
+  lcd.setCursor(4, 0);
   lcd.print("Router-Table");
-  lcd.setCursor(0, 2);
+  lcd.setCursor(3, 1);
   lcd.print("Firmware 0.9.0");
-  lcd.setCursor(2, 3);
+  lcd.setCursor(1, 2);
   lcd.print("(C) Rainer Poisel");
+  lcd.setCursor(4, 3);
+  lcd.print("Insert Coin");
 }
 
 void MyRenderer::render(Menu const& menu) const

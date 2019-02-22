@@ -10,18 +10,17 @@ class Stepper;
 class StepperMoving : public State
 {
   public:
-  StepperMoving(Stepper* stepper) : stepper(stepper), stepsLeft(0), stepNumber(0), lastStepTime(0)
+  StepperMoving(Stepper* stepper) : stepper(stepper), stepsLeft(0), lastStepTime(0)
   {
   }
   void execute(FSM* fsm);
   void reset(int32_t numberOfSteps);
 
   private:
-  void doStep(uint32_t thisStep) const;
+  void doStep() const;
 
   Stepper* stepper;
   int32_t stepsLeft;
-  uint32_t stepNumber;
   unsigned long lastStepTime;
 };
 
@@ -29,13 +28,15 @@ class StepperIdle : public State
 {
   public:
   StepperIdle() = default;
-  void execute(FSM* fsm);
+  inline void execute(FSM* fsm)
+  {
+  }
 };
 
 class Stepper
 {
   public:
-  Stepper(uint32_t numberOfSteps, uint8_t motorPin1, uint8_t motorPin2);
+  Stepper(uint32_t numberOfSteps, uint8_t directionPin, uint8_t stepPin);
 
   void setSpeed(uint32_t whatSpeed);
   void step(uint32_t numberOfSteps);
@@ -58,13 +59,13 @@ class Stepper
   {
     return numberOfSteps;
   }
-  inline uint8_t getMotorPin1() const
+  inline uint8_t getDirectionPin() const
   {
-    return motorPin1;
+    return directionPin;
   }
-  inline uint8_t getMotorPin2() const
+  inline uint8_t getStepPin() const
   {
-    return motorPin2;
+    return stepPin;
   }
   inline State* getIdleState()
   {
@@ -84,8 +85,8 @@ class Stepper
 
   uint8_t const pinCount;
   uint32_t const numberOfSteps;
-  uint8_t const motorPin1;
-  uint8_t const motorPin2;
+  uint8_t const directionPin;
+  uint8_t const stepPin;
 };
 
 #endif /* STEPPER_H */

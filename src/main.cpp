@@ -6,7 +6,7 @@
 #include <Encoder.h>
 
 static Encoder myEnc(5, 6);
-static Stepper stepper(200, 2, 3);
+static Stepper stepper(200 /* steps */, 2 /* direction */, 3 /* step */);
 
 static MyDisplay display(0x27, 20, 4);
 static MyRenderer my_renderer(display);
@@ -16,11 +16,17 @@ static int32_t oldPos;
 
 MenuItem menuMainItem1("Move +1  Step", [](MenuComponent* p_menu_component) { stepper.step(1); });
 MenuItem menuMainItem2("Move +10 Steps", [](MenuComponent* p_menu_component) { stepper.step(10); });
-MenuItem menuMainItem3("Move -1  Step", [](MenuComponent* p_menu_component) { stepper.step(-1); });
-MenuItem menuMainItem4("Move -10 Steps",
+MenuItem menuMainItem3("Move +100 Steps", [](MenuComponent* p_menu_component) { stepper.step(100); });
+MenuItem menuMainItem4("Move +1000 Steps", [](MenuComponent* p_menu_component) { stepper.step(1000); });
+MenuItem menuMainItem5("Move -1  Step", [](MenuComponent* p_menu_component) { stepper.step(-1); });
+MenuItem menuMainItem6("Move -10 Steps",
                        [](MenuComponent* p_menu_component) { stepper.step(-10); });
+MenuItem menuMainItem7("Move -100 Steps",
+                       [](MenuComponent* p_menu_component) { stepper.step(-100); });
+MenuItem menuMainItem8("Move -1000 Steps",
+                       [](MenuComponent* p_menu_component) { stepper.step(-1000); });
 Menu menuSub("Settings");
-MenuItem menuSubItem1("Speed", [](MenuComponent* p_menu_component) { stepper.setSpeed(10); });
+MenuItem menuSubItem1("Speed", [](MenuComponent* p_menu_component) { stepper.setSpeed(100); });
 
 void setup()
 {
@@ -32,6 +38,10 @@ void setup()
   ms.get_root_menu().add_item(&menuMainItem2);
   ms.get_root_menu().add_item(&menuMainItem3);
   ms.get_root_menu().add_item(&menuMainItem4);
+  ms.get_root_menu().add_item(&menuMainItem5);
+  ms.get_root_menu().add_item(&menuMainItem6);
+  ms.get_root_menu().add_item(&menuMainItem7);
+  ms.get_root_menu().add_item(&menuMainItem8);
   ms.get_root_menu().add_menu(&menuSub);
   menuSub.add_item(&menuSubItem1);
   ms.display();
@@ -52,15 +62,12 @@ void loop()
     {
     case 'w':
       ms.prev();
-      ms.display();
       break;
     case 's':
       ms.next();
-      ms.display();
       break;
     case 'a':
       ms.back();
-      ms.display();
       break;
     case 'd':
       ms.select();
@@ -68,6 +75,7 @@ void loop()
     default:
       break;
     }
+    ms.display();
   }
   stepper.update();
 }

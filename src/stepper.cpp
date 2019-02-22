@@ -4,22 +4,20 @@
 
 void StepperMoving::execute(FSM* fsm)
 {
+  if (!this->stepsLeft)
+  {
+    fsm->setState(stepper->getIdleState());
+  }
   auto now = micros();
   if (now - this->lastStepTime < stepper->getStepDelay())
   {
     return;
   }
 
-  this->stepsLeft += (this->stepsLeft > 0) ? -1 : 1;
-  this->stepNumber += (this->stepsLeft > 0) ? 1 : -1;
-
-  this->doStep(this->stepNumber);
+  this->doStep();
   this->lastStepTime = now;
 
-  if (!this->stepsLeft)
-  {
-    fsm->setState(stepper->getIdleState());
-  }
+  this->stepsLeft += (this->stepsLeft > 0) ? -1 : 1;
 }
 
 void StepperMoving::reset(int32_t numberOfSteps)
@@ -27,43 +25,22 @@ void StepperMoving::reset(int32_t numberOfSteps)
   this->stepsLeft = numberOfSteps;
 }
 
-void StepperMoving::doStep(uint32_t thisStep) const
+void StepperMoving::doStep() const
 {
-  if (stepper->getPinCount() == 2)
-  {
-    switch (thisStep % 4)
-    {
-    case 0:
-      digitalWrite(stepper->getMotorPin1(), LOW);
-      digitalWrite(stepper->getMotorPin2(), HIGH);
-      break;
-    case 1:
-      digitalWrite(stepper->getMotorPin1(), HIGH);
-      digitalWrite(stepper->getMotorPin2(), HIGH);
-      break;
-    case 2:
-      digitalWrite(stepper->getMotorPin1(), HIGH);
-      digitalWrite(stepper->getMotorPin2(), LOW);
-      break;
-    case 3:
-      digitalWrite(stepper->getMotorPin1(), LOW);
-      digitalWrite(stepper->getMotorPin2(), LOW);
-      break;
-    }
-  }
+  digitalWrite(stepper->getDirectionPin(), this->stepsLeft > 0 ? HIGH : LOW);
+  digitalWrite(stepper->getStepPin(), HIGH);
+  delayMicroseconds(1);
+  digitalWrite(stepper->getStepPin(), LOW);
 }
 
-void StepperIdle::execute(FSM* fsm)
-{
-}
-
-Stepper::Stepper(uint32_t numberOfSteps, uint8_t motorPin1, uint8_t motorPin2)
+Stepper::Stepper(uint32_t numberOfSteps, uint8_t directionPin, uint8_t stepPin)
     : fsm(), stepDelay(0), stateIdle(), stateMoving(this), pinCount(2),
-      numberOfSteps(numberOfSteps), motorPin1(motorPin1), motorPin2(motorPin2)
+      numberOfSteps(numberOfSteps), directionPin(directionPin), stepPin(stepPin)
 {
   fsm.setState(&stateIdle);
-  pinMode(this->motorPin1, OUTPUT);
-  pinMode(this->motorPin2, OUTPUT);
+  pinMode(this->directionPin, OUTPUT);
+  pinMode(this->stepPin, OUTPUT);
+  setSpeed(100);
 }
 
 void Stepper::update()
