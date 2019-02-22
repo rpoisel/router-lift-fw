@@ -14,23 +14,29 @@ static MenuSystem ms(my_renderer);
 
 static int32_t oldPos;
 
-MenuItem menuMainItem1("Move +1  Step", [](MenuComponent* p_menu_component) { stepper.step(1); });
-MenuItem menuMainItem2("Move +10 Steps", [](MenuComponent* p_menu_component) { stepper.step(10); });
-MenuItem menuMainItem3("Move +100 Steps", [](MenuComponent* p_menu_component) { stepper.step(100); });
+MenuItem menuMainItem1("Move +1    Step", [](MenuComponent* p_menu_component) { stepper.step(1); });
+MenuItem menuMainItem2("Move +10   Steps", [](MenuComponent* p_menu_component) { stepper.step(10); });
+MenuItem menuMainItem3("Move +100  Steps", [](MenuComponent* p_menu_component) { stepper.step(100); });
 MenuItem menuMainItem4("Move +1000 Steps", [](MenuComponent* p_menu_component) { stepper.step(1000); });
-MenuItem menuMainItem5("Move -1  Step", [](MenuComponent* p_menu_component) { stepper.step(-1); });
-MenuItem menuMainItem6("Move -10 Steps",
+MenuItem menuMainItem5("Move -1    Step", [](MenuComponent* p_menu_component) { stepper.step(-1); });
+MenuItem menuMainItem6("Move -10   Steps",
                        [](MenuComponent* p_menu_component) { stepper.step(-10); });
-MenuItem menuMainItem7("Move -100 Steps",
+MenuItem menuMainItem7("Move -100  Steps",
                        [](MenuComponent* p_menu_component) { stepper.step(-100); });
 MenuItem menuMainItem8("Move -1000 Steps",
                        [](MenuComponent* p_menu_component) { stepper.step(-1000); });
 Menu menuSub("Settings");
-MenuItem menuSubItem1("Speed", [](MenuComponent* p_menu_component) { stepper.setSpeed(100); });
+MenuItem menuSubItem1("Speed", [](MenuComponent* p_menu_component) { stepper.setSpeed(200); });
+MenuItem menuSubItem2("Back", [](MenuComponent* p_menu_component) { ms.back(); ms.display(); });
+
+static uint8_t const BUTTON_PIN = 4;
+static int lastButtonVal;
 
 void setup()
 {
   Serial.begin(115200);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  lastButtonVal = digitalRead(BUTTON_PIN);
   display.begin();
   oldPos = myEnc.read();
 
@@ -44,15 +50,31 @@ void setup()
   ms.get_root_menu().add_item(&menuMainItem8);
   ms.get_root_menu().add_menu(&menuSub);
   menuSub.add_item(&menuSubItem1);
+  menuSub.add_item(&menuSubItem2);
   ms.display();
 }
 
 void loop()
 {
-  int32_t curPos = myEnc.read();
+  int32_t curPos = myEnc.read() / 4;
+  auto curButtonVal = digitalRead(BUTTON_PIN);
+  if (curButtonVal == LOW && lastButtonVal == HIGH)
+  {
+    ms.select();
+    ms.display();
+  }
+  lastButtonVal = curButtonVal;
   if (curPos != oldPos)
   {
-    Serial.print(curPos);
+    if (curPos > oldPos)
+    {
+      ms.prev();
+    }
+    else
+    {
+      ms.next();
+    }
+    ms.display();
     oldPos = curPos;
   }
   char inChar;
