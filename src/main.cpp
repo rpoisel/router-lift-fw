@@ -12,7 +12,7 @@ static MyDisplay<LiquidCrystal_I2C> display(0x27, 20, 4);
 static MyRenderer<LiquidCrystal_I2C> my_renderer(display);
 static MenuSystem ms(my_renderer);
 
-static int32_t oldPos;
+static int32_t encOldPos;
 
 static MenuItem menuMainItem1("Move +1    Step",
                               [](MenuComponent* p_menu_component) { stepper.step(1); });
@@ -41,13 +41,17 @@ static MenuItem menuSubItem2("Back", [](MenuComponent* p_menu_component) {
 static uint8_t const BUTTON_PIN = 4;
 static int lastButtonVal;
 
+static void handleButton();
+static void handleRotaryEncoder();
+static void setupTimerInterrupt();
+
 void setup()
 {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   lastButtonVal = digitalRead(BUTTON_PIN);
   display.begin();
-  oldPos = myEnc.read();
+  encOldPos = myEnc.read();
 
   ms.get_root_menu().add_item(&menuMainItem1);
   ms.get_root_menu().add_item(&menuMainItem2);
@@ -61,16 +65,14 @@ void setup()
   menuSub.add_item(&menuSubItem1);
   menuSub.add_item(&menuSubItem2);
   ms.display();
-}
 
-static void handleButton();
-static void handleRotaryEncoder();
+  setupTimerInterrupt();
+}
 
 void loop()
 {
   handleButton();
   handleRotaryEncoder();
-  stepper.update();
 }
 
 static void handleButton()
@@ -86,10 +88,10 @@ static void handleButton()
 
 static void handleRotaryEncoder()
 {
-  int32_t curPos = myEnc.read() / 4;
-  if (curPos != oldPos)
+  int32_t encCurPos = myEnc.read() / 4;
+  if (encCurPos != encOldPos)
   {
-    if (curPos > oldPos)
+    if (encCurPos > encOldPos)
     {
       ms.prev();
     }
@@ -98,6 +100,31 @@ static void handleRotaryEncoder()
       ms.next();
     }
     ms.display();
-    oldPos = curPos;
+    encOldPos = encCurPos;
   }
+}
+
+static void setupTimerInterrupt()
+{
+  noInterrupts();
+
+  // set timer0 interrupt at 2kHz
+  TCCR0A = 0; // set entire TCCR2A register to 0
+  TCCR0B = 0; // same for TCCR2B
+  TCNT0 = 0;  // initialize counter value to 0
+  // set compare match register for 2khz increments
+  OCR0A = (16L * 10 ^ 6) / (2000L * 64) - 1; // (must be <256)
+  // turn on CTC mode
+  TCCR0A |= (1 << WGM01);
+  // Set CS01 and CS00 bits for 64 prescaler
+  TCCR0B |= (1 << CS01) | (1 << CS00);
+  // enable timer compare interrupt
+  TIMSK0 |= (1 << OCIE0A);
+
+  interrupts();
+}
+
+ISR(TIMER0_COMPA_vect)
+{
+  stepper.update();
 }
