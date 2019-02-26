@@ -28,6 +28,30 @@ class MyLiquidCrystal
   }
 };
 
+class SerialDisplay
+{
+  public:
+  inline SerialDisplay(uint8_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows)
+  {
+  }
+  inline void clear()
+  {
+  }
+  inline void init()
+  {
+  }
+  inline void backlight()
+  {
+  }
+  inline void setCursor(uint8_t, uint8_t)
+  {
+  }
+  inline size_t print(char const* str)
+  {
+    return Serial.println(str);
+  }
+};
+
 template <typename display_type>
 class MyDisplay
 {
@@ -71,6 +95,10 @@ class MyRenderer : public MenuComponentRenderer
   }
   void render(Menu const& menu) const
   {
+    if (menu.get_current_component_num() == menu.get_previous_component_num())
+    {
+      return;
+    }
     display.getRaw().clear();
     display.getRaw().setCursor(0, 0);
     display.getRaw().print(menu.get_name());
