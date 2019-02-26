@@ -4,6 +4,8 @@
 #include <LiquidCrystal_I2C.h>
 #include <MenuSystem.h>
 
+void setupMenu();
+
 class MyLiquidCrystal
 {
   public:
