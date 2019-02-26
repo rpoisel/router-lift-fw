@@ -41,6 +41,7 @@ class SerialDisplay
   }
   inline void init()
   {
+    Serial.begin(115200);
   }
   inline void backlight()
   {

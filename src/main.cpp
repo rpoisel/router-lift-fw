@@ -15,7 +15,6 @@ static void setupTimerInterrupt();
 
 void setup()
 {
-  Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   buttonOldVal = digitalRead(BUTTON_PIN);
   display.begin();
