@@ -19,6 +19,7 @@ class Stepper
   unsigned long stepDelay;
   int32_t stepsLeft;
   unsigned long lastStepTime;
+  bool pinState;
 };
 
 #endif /* STEPPER_H */

@@ -3,7 +3,8 @@
 #include <Arduino.h>
 
 Stepper::Stepper(uint32_t numberOfSteps, uint8_t directionPin, uint8_t stepPin)
-    : numberOfSteps(numberOfSteps), directionPin(directionPin), stepPin(stepPin), stepDelay(0)
+    : numberOfSteps(numberOfSteps), directionPin(directionPin), stepPin(stepPin), stepDelay(0),
+      pinState(false)
 {
   pinMode(directionPin, OUTPUT);
   pinMode(stepPin, OUTPUT);
@@ -12,6 +13,12 @@ Stepper::Stepper(uint32_t numberOfSteps, uint8_t directionPin, uint8_t stepPin)
 
 void Stepper::update()
 {
+  if (pinState)
+  {
+    pinState = false;
+    digitalWrite(stepPin, LOW);
+    return;
+  }
   if (!stepsLeft)
   {
     return;
@@ -22,10 +29,8 @@ void Stepper::update()
     return;
   }
 
-  digitalWrite(directionPin, stepsLeft > 0 ? HIGH : LOW);
+  pinState = true;
   digitalWrite(stepPin, HIGH);
-  delayMicroseconds(1);
-  digitalWrite(stepPin, LOW);
 
   lastStepTime = now;
 
@@ -40,4 +45,5 @@ void Stepper::setSpeed(uint32_t whatSpeed)
 void Stepper::step(uint32_t numberOfSteps)
 {
   stepsLeft = numberOfSteps;
+  digitalWrite(directionPin, stepsLeft > 0 ? HIGH : LOW);
 }
