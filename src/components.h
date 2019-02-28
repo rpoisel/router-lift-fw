@@ -1,12 +1,12 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-#include <Encoder.h>
+#include <Rotary.h>
 
 #include <stepper.h>
 #include <ui.h>
 
-extern Encoder myEnc;
+extern Rotary myEnc;
 extern Stepper stepper;
 
 extern MyDisplay<LiquidCrystal_I2C> display;

@@ -7,7 +7,6 @@
 static uint8_t const BUTTON_PIN = 4;
 
 static int buttonOldVal;
-static int32_t encOldPos;
 
 static void handleButton();
 static void handleRotaryEncoder();
@@ -18,7 +17,7 @@ void setup()
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   buttonOldVal = digitalRead(BUTTON_PIN);
   display.begin();
-  encOldPos = myEnc.read();
+  myEnc.begin(true);
 
   setupMenu();
   setupTimerInterrupt();
@@ -43,10 +42,10 @@ static void handleButton()
 
 static void handleRotaryEncoder()
 {
-  int32_t encCurPos = myEnc.read() / 4;
-  if (encCurPos != encOldPos)
+  auto encCurPos = myEnc.process();
+  if (encCurPos)
   {
-    if (encCurPos > encOldPos)
+    if (encCurPos == DIR_CW)
     {
       ms.prev();
     }
@@ -55,7 +54,6 @@ static void handleRotaryEncoder()
       ms.next();
     }
     ms.display();
-    encOldPos = encCurPos;
   }
 }
 
