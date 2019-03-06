@@ -1,60 +1,20 @@
-#include <components.h>
-#include <stepper.h>
-#include <ui.h>
+#include <controller.h>
 
 #include <Arduino.h>
 
-static uint8_t const BUTTON_PIN = 4;
+using namespace RouterFW;
 
-static int buttonOldVal;
-
-static void handleButton();
-static void handleRotaryEncoder();
 static void setupTimerInterrupt();
 
 void setup()
 {
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
-  buttonOldVal = digitalRead(BUTTON_PIN);
-  display.begin();
-  myEnc.begin(true);
-
-  setupMenu();
+  Controller::instance().begin();
   setupTimerInterrupt();
 }
 
 void loop()
 {
-  handleButton();
-  handleRotaryEncoder();
-}
-
-static void handleButton()
-{
-  auto buttonCurVal = digitalRead(BUTTON_PIN);
-  if (buttonCurVal == LOW && buttonOldVal == HIGH)
-  {
-    ms.select();
-    ms.display();
-  }
-  buttonOldVal = buttonCurVal;
-}
-
-static void handleRotaryEncoder()
-{
-  auto encCurPos = myEnc.process();
-  if (encCurPos)
-  {
-    if (encCurPos == DIR_CW)
-    {
-      ms.prev();
-    }
-    else
-    {
-      ms.next();
-    }
-    ms.display();
-  }
+  Controller::instance().tick();
 }
 
 static void setupTimerInterrupt()
@@ -79,5 +39,5 @@ static void setupTimerInterrupt()
 
 ISR(TIMER0_COMPA_vect)
 {
-  stepper.update();
+  Controller::instance().isrHandler();
 }

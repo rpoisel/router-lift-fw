@@ -2,131 +2,71 @@
 #define UI_H
 
 #include <LiquidCrystal_I2C.h>
-#include <MenuSystem.h>
 
-void setupMenu();
-
-class MyLiquidCrystal
+namespace RouterFW
 {
-  public:
-  inline MyLiquidCrystal(uint8_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows)
-  {
-  }
-  inline void clear()
-  {
-  }
-  inline void init()
-  {
-  }
-  inline void backlight()
-  {
-  }
-  inline void setCursor(uint8_t, uint8_t)
-  {
-  }
-  inline size_t print(char const* str)
-  {
-    return 0;
-  }
-};
-
-class SerialDisplay
+class UI
 {
-  public:
-  inline SerialDisplay(uint8_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows)
-  {
-  }
-  inline void clear()
-  {
-  }
-  inline void init()
-  {
-    Serial.begin(115200);
-  }
-  inline void backlight()
-  {
-  }
-  inline void setCursor(uint8_t, uint8_t)
-  {
-  }
-  inline size_t print(char const* str)
-  {
-    return Serial.println(str);
-  }
-};
+  enum MenuSelection { MOVE = 0, RESET, MOVING };
 
-template <typename display_type>
-class MyDisplay
-{
   public:
-  MyDisplay(uint8_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows)
-      : lcd(lcd_Addr, lcd_cols, lcd_rows)
+  static UI& instance()
   {
+    static UI instance;
+    return instance;
   }
+
   void begin()
   {
     lcd.init();
     lcd.backlight();
-    drawTitle();
+    drawInterface();
   }
-  inline display_type& getRaw()
+  void setPos(int32_t pos)
   {
-    return lcd;
+    lcd.setCursor(4, 1);
+    lcd.print((float)pos / 100);
+    lcd.print(" mm         ");
+  }
+  void setMove()
+  {
+    drawMenu(MOVE);
+  }
+  void setReset()
+  {
+    drawMenu(RESET);
+  }
+  void setMoving()
+  {
+    drawMenu(MOVING);
   }
 
   private:
-  void drawTitle()
+  UI() : lcd(0x27 /* lcd_Addr */, 20 /* lcd_cols */, 4 /* lcd_rows */)
   {
-    lcd.setCursor(4, 0);
-    lcd.print("Router-Table");
-    lcd.setCursor(3, 1);
-    lcd.print("Firmware 0.9.0");
-    lcd.setCursor(1, 2);
-    lcd.print("(C) Rainer Poisel");
+  }
+  UI(const UI&);
+  UI& operator=(const UI&);
+  void drawMenu(MenuSelection selection)
+  {
+    lcd.setCursor(4, 2);
+    lcd.print(selection == MOVE ? "> Move" : "  Move");
     lcd.setCursor(4, 3);
-    lcd.print("Insert Coin");
+    lcd.print(selection == RESET ? "> Reset" : "  Reset");
   }
-  display_type lcd;
-};
-
-template <typename display_type>
-class MyRenderer : public MenuComponentRenderer
-{
-  public:
-  MyRenderer(MyDisplay<display_type>& display) : display(display)
+  void drawInterface()
   {
-  }
-  void render(Menu const& menu) const
-  {
-    if (menu.get_current_component_num() == menu.get_previous_component_num())
-    {
-      return;
-    }
-    display.getRaw().clear();
-    display.getRaw().setCursor(0, 0);
-    display.getRaw().print(menu.get_name());
-    display.getRaw().setCursor(0, 1);
-    menu.get_current_component()->render(*this);
-  }
-  void render_menu_item(MenuItem const& menu_item) const
-  {
-    display.getRaw().print(menu_item.get_name());
-  }
-  void render_back_menu_item(BackMenuItem const& menu_item) const
-  {
-    display.getRaw().print(menu_item.get_name());
-  }
-  void render_numeric_menu_item(NumericMenuItem const& menu_item) const
-  {
-    display.getRaw().print(menu_item.get_name());
-  }
-  void render_menu(Menu const& menu) const
-  {
-    display.getRaw().print(menu.get_name());
+    lcd.setCursor(4, 1);
+    lcd.print("0.0 mm");
+    lcd.setCursor(4, 2);
+    lcd.print("  Move");
+    lcd.setCursor(4, 3);
+    lcd.print("  Reset");
+    drawMenu(MOVE);
   }
 
-  private:
-  MyDisplay<display_type>& display;
+  LiquidCrystal_I2C lcd;
 };
+} // namespace RouterFW
 
 #endif /* UI_H */

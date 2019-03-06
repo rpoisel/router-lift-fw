@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include <util/atomic.h>
+
 Stepper::Stepper(uint32_t numberOfSteps, uint8_t directionPin, uint8_t stepPin)
     : numberOfSteps(numberOfSteps), directionPin(directionPin), stepPin(stepPin), stepDelay(0),
       pinState(false)
@@ -42,8 +44,21 @@ void Stepper::setSpeed(uint32_t whatSpeed)
   stepDelay = 60L * 1000 * 1000 / (numberOfSteps * whatSpeed);
 }
 
-void Stepper::step(uint32_t numberOfSteps)
+void Stepper::addSteps(int32_t numberOfSteps)
 {
-  stepsLeft = numberOfSteps;
-  digitalWrite(directionPin, stepsLeft > 0 ? HIGH : LOW);
+  uint8_t direction;
+  ATOMIC_BLOCK(ATOMIC_FORCEON)
+  {
+    stepsLeft += numberOfSteps;
+    direction =stepsLeft > 0 ? HIGH : LOW;
+  }
+  digitalWrite(directionPin, direction);
+}
+
+void Stepper::reset()
+{
+  ATOMIC_BLOCK(ATOMIC_FORCEON)
+  {
+    stepsLeft = 0;
+  }
 }
