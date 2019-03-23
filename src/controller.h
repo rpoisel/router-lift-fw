@@ -1,8 +1,11 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include <fsm.h>
 #include <io.h>
+#include <states.h>
 #include <stepper.h>
+#include <ui.h>
 
 #include <Rotary.h>
 
@@ -19,42 +22,77 @@ class Controller
     static Controller controller;
     return controller;
   }
-  void begin();
-  void tick();
-  void isrHandler()
+
+  void begin()
+  {
+    enc.begin(true);
+    pinMode(9, OUTPUT);
+    digitalWrite(9, HIGH);
+    UI::instance().begin();
+    fsm.setState(StateMenu::instance());
+  }
+  void tick()
+  {
+    encPos = enc.process();
+    button.tick();
+    lowerLimit.tick();
+    upperLimit.tick();
+    fsm.update();
+  }
+  void timerHandler()
   {
     stepper.update();
+  }
+  inline DebouncedInput& getButton()
+  {
+    return button;
+  }
+  inline DebouncedInput& getUpperLimit()
+  {
+    return upperLimit;
+  }
+  inline DebouncedInput& getLowerLimit()
+  {
+    return lowerLimit;
+  }
+  inline Stepper& getStepper()
+  {
+    return stepper;
+  }
+  inline unsigned char getEncoderPos() const
+  {
+    return encPos;
+  }
+  inline int32_t getRouterPos() const
+  {
+    return routerPos;
+  }
+  inline void resetRouterPos()
+  {
+    routerPos = 0;
+  }
+  inline void incRouterPos(int32_t steps)
+  {
+    routerPos += steps;
   }
 
   private:
   Controller()
       : enc(5, 6), button(4), upperLimit(8), lowerLimit(7),
-        stepper(200 /* steps */, 2 /* direction */, 3 /* step */), state(IN_MENU_MOVE), pos(0),
-        encPos(0)
+        stepper(200 /* steps */, 2 /* direction pin */, 3 /* step pin */), encPos(0), routerPos(0)
   {
   }
   Controller(const Controller&);
   Controller& operator=(const Controller&);
-  void tickInternal();
-  void handleMenuMove();
-  void handleMenuReset();
-  void handleMoving();
 
-  // components
+  FSM fsm;
   Rotary enc;
   DebouncedInput button;
   DebouncedInput upperLimit;
   DebouncedInput lowerLimit;
   Stepper stepper;
-
-  // internal state
-  enum {
-    IN_MENU_MOVE = 0,
-    IN_MENU_RESET,
-    IN_MOVING,
-  } state;
-  int32_t pos;
   unsigned char encPos;
+  int32_t routerPos;
 };
 
 } // namespace RouterFW

@@ -7,8 +7,6 @@ namespace RouterFW
 {
 class UI
 {
-  enum MenuSelection { MOVE = 0, RESET, MOVING };
-
   public:
   static UI& instance()
   {
@@ -20,25 +18,22 @@ class UI
   {
     lcd.init();
     lcd.backlight();
-    drawInterface();
+    drawPos(0);
   }
-  void setPos(int32_t pos)
+  void drawPos(int32_t pos)
   {
     lcd.setCursor(4, 1);
     lcd.print((float)pos / 100);
     lcd.print(" mm         ");
   }
-  void setMove()
+  void drawMenu(char const* firstItem, char const* secondItem)
   {
-    drawMenu(MOVE);
-  }
-  void setReset()
-  {
-    drawMenu(RESET);
-  }
-  void setMoving()
-  {
-    drawMenu(MOVING);
+    lcd.setCursor(2, 2);
+    lcd.print("> ");
+    lcd.setCursor(4, 2);
+    lcd.print(firstItem);
+    lcd.setCursor(4, 3);
+    lcd.print(secondItem);
   }
 
   private:
@@ -47,23 +42,6 @@ class UI
   }
   UI(const UI&);
   UI& operator=(const UI&);
-  void drawMenu(MenuSelection selection)
-  {
-    lcd.setCursor(4, 2);
-    lcd.print(selection == MOVE ? "> Move" : "  Move");
-    lcd.setCursor(4, 3);
-    lcd.print(selection == RESET ? "> Reset" : "  Reset");
-  }
-  void drawInterface()
-  {
-    lcd.setCursor(4, 1);
-    lcd.print("0.0 mm");
-    lcd.setCursor(4, 2);
-    lcd.print("  Move");
-    lcd.setCursor(4, 3);
-    lcd.print("  Reset");
-    drawMenu(MOVE);
-  }
 
   LiquidCrystal_I2C lcd;
 };

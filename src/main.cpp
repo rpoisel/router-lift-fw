@@ -39,5 +39,5 @@ static void setupTimerInterrupt()
 
 ISR(TIMER0_COMPA_vect)
 {
-  Controller::instance().isrHandler();
+  Controller::instance().timerHandler();
 }
